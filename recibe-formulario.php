@@ -1,26 +1,36 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recibe Formulario</title>
-</head>
-<body>
-    <h1>
-        <p>
-            <?php
-            if ($_SERVER["REQUEST_METHOD"] == "POST") {
-                $nombre = $_POST["nombre"] ?? '';
-                $correo = $_POST["correo"] ?? '';
-                $fecha_nacimiento = $_POST["fecha_nacimiento"] ?? '';
+<?php
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $nombre           = $_POST["nombre"] ?? '';
+    $correo           = $_POST["correo"] ?? '';
+    $fecha_nacimiento = $_POST["fecha_nacimiento"] ?? '';
 
-                echo "Nombre: " . htmlspecialchars($nombre) . "<br>";
-                echo "Correo: " . htmlspecialchars($correo) . "<br>";
-                echo "Fecha de Nacimiento: " . htmlspecialchars($fecha_nacimiento) . "<br>";
-            } else {
-                echo "No se recibieron datos del formulario.";
-            }
-            ?>
-        </p>
-</body>
-</html>
+    // Datos de conexión
+    $servidor  = "localhost";
+    $usuario   = "root";
+    $password  = ""; 
+    $db_nombre = "horoscopo";
+
+    $conexion = new mysqli($servidor, $usuario, $password, $db_nombre);
+
+    if ($conexion->connect_error) {
+        die("Error de conexión: " . $conexion->connect_error);
+    }
+
+    if (!empty($nombre) && !empty($correo) && !empty($fecha_nacimiento)) {
+        // Preparamos la inserción con correo
+        $stmt = $conexion->prepare("INSERT INTO usuarios (nombre, correo, fecha_nacimiento) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $nombre, $correo, $fecha_nacimiento);
+
+        if ($stmt->execute()) {
+            echo "¡Datos guardados correctamente!";
+        } else {
+            echo "Error al insertar: " . $stmt->error;
+        }
+        $stmt->close();
+    } else {
+        echo "Por favor llena todos los campos.";
+    }
+
+    $conexion->close();
+}
+?>
